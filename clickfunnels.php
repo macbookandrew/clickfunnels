@@ -622,10 +622,10 @@ function clickfunnels_clickoptin( $atts ) {
 	wp_enqueue_script( 'cf-optin' );
 	wp_add_inline_script( 'cf-optin', $inline_script, 'before' );
 
-    return "<div id='clickoptin_cf_wrapper_".$a['id']."' class='clickoptin_".$a['theme_style']."'>
+    return "<form id='clickoptin_cf_wrapper_".$a['id']."' class='clickoptin_".$a['theme_style']."'>
     <input type='text' id='clickoptin_cf_email_".$a['id']."' placeholder='".$placeholder."' class='clickoptin_".$a['input_icon']."' />
-    <span class='clickoptin_".$a['button_color']."' id='clickoptin_cf_button_".$a['id']."'>".$button_text."</span>
-</div>
+    <button type='submit' class='clickoptin_".$a['button_color']."' id='clickoptin_cf_button_".$a['id']."'>".$button_text."</button>
+</form>
 <style>
     #clickoptin_cf_wrapper_".$a['id']." * {
         margin: 0;
