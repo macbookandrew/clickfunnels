@@ -25,7 +25,16 @@ class ClickFunnels {
             $message = '<div id="message" class="badAPI error notice" style="width: 733px;padding: 10px 12px;font-weight: bold"><i class="fa fa-times" style="margin-right: 5px;"></i> Error in ClickFunnels plugn, please check <a href="edit.php?post_type=clickfunnels&page=cf_api&error=compatibility">Settings > Compatibility Check</a> for details.</div>';
             add_action( "admin_notices", array( $this, $message ) );
         }
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
     }
+
+	/**
+	 * Enqueue click optin code
+	 */
+	public function enqueue_scripts() {
+		wp_register_script( 'cf-optin', plugin_dir_url( __FILE__ ) . 'js/click-optin.js', array( 'jquery' ) );
+	}
 
     // Let's see if we should do anything about this page request
     public function process_page_request() {
@@ -605,61 +614,18 @@ function clickfunnels_clickoptin( $atts ) {
       $subdomain = $a['subdomain'] . '.clickfunnels.com';
     }
 
-    $js_file_url = plugins_url( 'js/jquery.js', __FILE__ );
+	$inline_script = '
+	var clickOptinId = "' . $a['id'] . '",
+		clickOptinSubdomain = "' . $subdomain . '",
+		clickOptinRedirect = "' . $a['redirect'] . '";';
+
+	wp_enqueue_script( 'cf-optin' );
+	wp_add_inline_script( 'cf-optin', $inline_script, 'before' );
 
     return "<div id='clickoptin_cf_wrapper_".$a['id']."' class='clickoptin_".$a['theme_style']."'>
     <input type='text' id='clickoptin_cf_email_".$a['id']."' placeholder='".$placeholder."' class='clickoptin_".$a['input_icon']."' />
     <span class='clickoptin_".$a['button_color']."' id='clickoptin_cf_button_".$a['id']."'>".$button_text."</span>
 </div>
-<script>
-    if (!window.jQuery) {
-      var jq = document.createElement('script'); jq.type = 'text/javascript';
-      jq.src = '" . $js_file_url . "';
-      document.getElementsByTagName('head')[0].appendChild(jq);
-      var jQueries = jQuery.noConflict();
-        jQueries(document).ready(function($) {
-            jQueries( '#clickoptin_cf_button_".$a['id']."' ).click(function() {
-                var check_email = jQueries( '#clickoptin_cf_email_".$a['id']."' ).val();
-                if (check_email != '' && /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(check_email)) {
-                    jQueries( '#clickoptin_cf_email_".$a['id']."' ).addClass('clickoptin_cf_email_green');
-                    if('".$a['redirect']."' == 'newtab') {
-                        window.open('https://".$subdomain."/instant_optin/".$a['id']."/'+jQueries( '#clickoptin_cf_email_".$a['id']."' ).val(), '_blank');
-                    }
-                    else {
-                        window.location.href = 'https://".$subdomain."/instant_optin/".$a['id']."/'+jQueries( '#clickoptin_cf_email_".$a['id']."' ).val();
-                    }
-                }
-                else {
-                   jQueries( '#clickoptin_cf_email_".$a['id']."' ).addClass('clickoptin_cf_email_red');
-                }
-            });
-        });
-    }
-    else {
-      var jq = document.createElement('script'); jq.type = 'text/javascript';
-      jq.src = '" . $js_file_url . "';
-      document.getElementsByTagName('head')[0].appendChild(jq);
-      var $ = jQuery.noConflict();
-        $(document).ready(function($) {
-            $( '#clickoptin_cf_button_".$a['id']."' ).click(function() {
-                var check_email = $( '#clickoptin_cf_email_".$a['id']."' ).val();
-                if (check_email != '' && /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(check_email)) {
-                    $( '#clickoptin_cf_email_".$a['id']."' ).addClass('clickoptin_cf_email_green');
-                    if('".$a['redirect']."' == 'newtab') {
-                        window.open('https://".$subdomain."/instant_optin/".$a['id']."/'+$( '#clickoptin_cf_email_".$a['id']."' ).val(), '_blank');
-                    }
-                    else {
-                        window.location.href = 'https://".$subdomain."/instant_optin/".$a['id']."/'+$( '#clickoptin_cf_email_".$a['id']."' ).val();
-                    }
-                }
-                else {
-                   $( '#clickoptin_cf_email_".$a['id']."' ).addClass('clickoptin_cf_email_red');
-                }
-            });
-        });
-    }
-
-</script>
 <style>
     #clickoptin_cf_wrapper_".$a['id']." * {
         margin: 0;
@@ -733,7 +699,7 @@ function clickfunnels_clickoptin( $atts ) {
         border: 1px solid #eee;
         border-bottom: 3px solid #eee;
     }
-</style>";
+	</style>";
 }
 add_shortcode( 'clickfunnels_clickoptin', 'clickfunnels_clickoptin' );
 
